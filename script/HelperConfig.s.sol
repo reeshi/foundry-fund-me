@@ -10,12 +10,14 @@ contract HelperConfig is Script {
     }
 
     NetworkConfig public activeNetworkConfig;
+    uint8 public constant DECIMAL = 8;
+    int256 public constant INITIAL_PRICE = 2000e8;
 
     constructor() {
         if (block.chainid == 11155111) {
             activeNetworkConfig = getSepoliaEthConfig();
         } else {
-            activeNetworkConfig = getAnvilEthConfig();
+            activeNetworkConfig = getOrCreateAnvilEthConfig();
         }
     }
 
@@ -26,10 +28,16 @@ contract HelperConfig is Script {
             });
     }
 
-    function getAnvilEthConfig() public returns (NetworkConfig memory) {
+    function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
+        if (activeNetworkConfig.priceFeed != address(0)) {
+            return activeNetworkConfig;
+        }
         // Deploy the mock contract of AggregatorV3 on local anvil chain.
         vm.startBroadcast();
-        MockV3Aggregator mockV3Aggregator = new MockV3Aggregator(8, 2000e8);
+        MockV3Aggregator mockV3Aggregator = new MockV3Aggregator(
+            DECIMAL,
+            INITIAL_PRICE
+        );
         vm.stopBroadcast();
         return NetworkConfig({priceFeed: address(mockV3Aggregator)});
     }
