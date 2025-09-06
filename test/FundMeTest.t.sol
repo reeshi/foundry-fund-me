@@ -48,7 +48,7 @@ contract FundMeTest is Test {
     }
 
     function testAddsFunderToArrayOfFunders() public {
-        vm.prank(USER);
+        vm.prank(USER); // The next TX will be sent by USER
         fundMe.fund{value: SEND_VALUE}();
 
         address funder = fundMe.getFunder(0);
@@ -56,7 +56,7 @@ contract FundMeTest is Test {
     }
 
     function testOnlyOwnerCanWithdraw() public {
-        vm.prank(USER);
+        vm.prank(USER); // The next TX will be sent by USER
         fundMe.fund{value: SEND_VALUE}();
 
         vm.expectRevert();
