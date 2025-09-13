@@ -121,4 +121,37 @@ contract FundMeTest is Test {
             endingOwnerBalance
         );
     }
+
+    function testWithDrawWithMultipleFundersCheaper() public funded {
+        // Arrange
+        /**
+         * We will fund the fund me contract with 10 funders for this we need 10 different address
+         *  and we need to add some ether to it so that we can fund it
+         *  we can create addresss by this also --> address(any uint160 number)
+         *  we can use hoax function of foundry this will do vm.prank and vm.deal in a single step
+         */
+        uint160 numberOfFunders = 10;
+        uint160 startingFunderIndex = 1;
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
+            address newAddress = address(i);
+            hoax(newAddress, SEND_VALUE);
+            fundMe.fund{value: SEND_VALUE}();
+        }
+
+        uint256 startingOwnerBalance = fundMe.getOwner().balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // Act
+        vm.prank(fundMe.getOwner());
+        fundMe.cheaperWithdraw();
+
+        // Assert
+        uint256 endingOwnerBalance = fundMe.getOwner().balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+        assertEq(endingFundMeBalance, 0);
+        assertEq(
+            startingFundMeBalance + startingOwnerBalance,
+            endingOwnerBalance
+        );
+    }
 }
